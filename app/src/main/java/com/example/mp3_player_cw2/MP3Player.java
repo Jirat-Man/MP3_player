@@ -25,10 +25,6 @@ public class MP3Player {
         this.state = MP3PlayerState.STOPPED;
     }
 
-    public MP3PlayerState getState() {
-        return this.state;
-    }
-
     public void load(String filePath) {
         this.filePath = filePath;
         mediaPlayer = new MediaPlayer();
@@ -90,14 +86,5 @@ public class MP3Player {
             mediaPlayer.release();
             mediaPlayer = null;
         }
-    }
-    public void setDataSource(String s) throws IOException {
-        mediaPlayer.setDataSource(s);
-    }
-    public void prepareAsync(){
-        mediaPlayer.prepareAsync();
-    }
-    public boolean playing(){
-        return mediaPlayer.isPlaying();
     }
 }

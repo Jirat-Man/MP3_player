@@ -92,9 +92,8 @@ public class MainActivity extends AppCompatActivity {
 
     //delete notification
     public static void deleteNotification(Context ctx, int notifyId) {
-            String ns = Context.NOTIFICATION_SERVICE;
-            NotificationManager nMgr = (NotificationManager) ctx.getSystemService(ns);
-            nMgr.cancel(notifyId);
+        NotificationManager manager = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+            manager.cancel(notifyId);
         }
 
     //Connect Activity to Service
@@ -180,8 +179,7 @@ public class MainActivity extends AppCompatActivity {
                 .setSmallIcon(R.drawable.yellow)
                 .setContentTitle("Song Playing")
                 .setContentText(myService.getFilePath())
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(true);
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         NotificationManagerCompat managerCompat = NotificationManagerCompat.from(this);
         managerCompat.notify(1,builder.build());
