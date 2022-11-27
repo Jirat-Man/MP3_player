@@ -1,13 +1,17 @@
 package com.example.mp3_player_cw2;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import android.annotation.SuppressLint;
-import android.app.PendingIntent;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -55,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
             myService.stopSong();
             endTime.setText("0 sec");
             songName.setText("Song Name");
+            deleteNotification(this, 1);
         });
 
         pauseButton.setOnClickListener(v -> myService.pauseSong());
@@ -78,6 +83,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    public static void deleteNotification(Context ctx, int notifyId) {
+            String ns = Context.NOTIFICATION_SERVICE;
+            NotificationManager nMgr = (NotificationManager) ctx.getSystemService(ns);
+            nMgr.cancel(notifyId);
+        }
+
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -147,7 +159,30 @@ public class MainActivity extends AppCompatActivity {
                 setEndTime();
                 setSongPath();
                 setUpSeekBar();
+                Notify();
         });
+    }
+
+    private void Notify() {
+        createNotificationChannel();
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this, "channel_id")
+                .setSmallIcon(R.drawable.yellow)
+                .setContentTitle("Song Playing")
+                .setContentText(myService.getFilePath())
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true);
+
+        NotificationManagerCompat managerCompat = NotificationManagerCompat.from(this);
+        managerCompat.notify(1,builder.build());
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel channel = new NotificationChannel("channel_id", "channel_id", NotificationManager.IMPORTANCE_DEFAULT);
+                NotificationManager manager = getSystemService(NotificationManager.class);
+
+                manager.createNotificationChannel(channel);
+            }
     }
 
     private void setSongPath() {
@@ -167,12 +202,11 @@ public class MainActivity extends AppCompatActivity {
     private void stopSong(){
         myService.stopSong();
     }
-    public void showNotification(){
-        Intent intent = new Intent(this, MainActivity.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(this,
-                0, intent, 0);
-        Intent prevIntent = new Intent(this, NotificationReceiver.class).setAction(ACTION_PREV);
-        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent prevPendingIntent = PendingIntent.getBroadcast(this, 0, prevIntent
-        , PendingIntent.FLAG_UPDATE_CURRENT);
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        deleteNotification(this, 1);
     }
+
 }

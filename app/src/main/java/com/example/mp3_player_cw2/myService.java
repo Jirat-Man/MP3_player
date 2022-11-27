@@ -1,5 +1,7 @@
 package com.example.mp3_player_cw2;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
@@ -7,6 +9,7 @@ import android.os.IBinder;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 public class myService extends Service{
 
@@ -47,8 +50,6 @@ public class myService extends Service{
     public int onStartCommand(Intent intent, int flags, int startId) {
         filePath = intent.getStringExtra("Path");
         mp3.load(filePath);
-
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this);
 
         return START_STICKY;
     }
