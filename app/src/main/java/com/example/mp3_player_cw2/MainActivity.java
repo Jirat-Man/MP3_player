@@ -26,7 +26,6 @@ import com.example.mp3_player_cw2.myService.myLocalBinder;
 
 
 public class MainActivity extends AppCompatActivity {
-    MP3Player mp3Player;
     ImageButton pauseButton;
     ImageButton playButton;
     ImageButton stopButton;
@@ -53,17 +52,24 @@ public class MainActivity extends AppCompatActivity {
         initWidgets();
         listFile();
 
-        playButton.setOnClickListener(v -> myService.playSong());
+        playButton.setOnClickListener(v -> {                    //handle play button event
+            myService.playSong();
+            Notify();
+        });
 
-        stopButton.setOnClickListener(v -> {
+        stopButton.setOnClickListener(v -> {                    //handle stop button event
             myService.stopSong();
             endTime.setText("0 sec");
             songName.setText("Song Name");
             deleteNotification(this, 1);
         });
 
-        pauseButton.setOnClickListener(v -> myService.pauseSong());
+        pauseButton.setOnClickListener(v -> {                   //handle pause button event
+            myService.pauseSong();
+            deleteNotification(this, 1);
+        });
 
+        //handle seekbar event
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -84,13 +90,14 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    //delete notification
     public static void deleteNotification(Context ctx, int notifyId) {
             String ns = Context.NOTIFICATION_SERVICE;
             NotificationManager nMgr = (NotificationManager) ctx.getSystemService(ns);
             nMgr.cancel(notifyId);
         }
 
-
+    //Connect Activity to Service
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
@@ -113,19 +120,21 @@ public class MainActivity extends AppCompatActivity {
         bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
+
+    //Update seekbar with the progress of the song
     @SuppressLint("SetTextI18n")
-    public void setUpSeekBar(){
+    public void updateSeekbar(){
         progress = myService.getProgress()/1000;
 
         seekBar.setProgress(progress);
         startTime.setText(progress + " sec");
 
-        runnable = this::setUpSeekBar;
+        runnable = this::updateSeekbar;
         handler.postDelayed(runnable, 0);
     }
 
+    //initialise all the views on the main activity
     private void initWidgets() {
-        mp3Player = new MP3Player();
         pauseButton = findViewById(R.id.pauseButton);
         playButton = findViewById(R.id.playButton);
         stopButton = findViewById(R.id.stopButton);
@@ -136,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
         handler = new Handler();
     }
 
+    //list all the files in the device
     @SuppressLint("SetTextI18n")
     public void listFile(){
         final ListView lv = findViewById(R.id.listView);
@@ -154,15 +164,16 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("Range") String uri =
                     c.getString(c.getColumnIndex(MediaStore.Audio.Media.DATA));
 
-                stopSong();
-                playSong(uri);
-                setEndTime();
-                setSongPath();
-                setUpSeekBar();
-                Notify();
+                stopSong();     //stop song
+                playSong(uri);  //playing song in uri
+                setEndTime();   //set seekbar max and endTime textview
+                setSongPath();  //set song path
+                updateSeekbar();    //update seekbar
+                Notify();       //notify users that a song is playing
         });
     }
 
+    //create notification channel
     private void Notify() {
         createNotificationChannel();
         NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this, "channel_id")
@@ -185,28 +196,32 @@ public class MainActivity extends AppCompatActivity {
             }
     }
 
+    //set textview as file path
     private void setSongPath() {
         songName.setText(myService.getFilePath());
     }
 
+    //set textview as end time of the song
     @SuppressLint("SetTextI18n")
     private void setEndTime() {
         endTime.setText(myService.getDuration() + " sec");
         seekBar.setMax(Integer.parseInt(myService.getDuration()));
     }
 
+    //start song
     private void playSong(String uri) {
         myService.playSong(uri);
     }
 
+    //stop song
     private void stopSong(){
         myService.stopSong();
     }
 
+    //delete notification when app is destroyed
     @Override
     protected void onDestroy() {
         super.onDestroy();
         deleteNotification(this, 1);
     }
-
 }

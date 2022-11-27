@@ -41,7 +41,7 @@ public class myService extends Service{
     }
 
     @Override
-    public void onDestroy() {
+    public void onDestroy() {//mp3 stop when service stop
         super.onDestroy();
         mp3.stop();
     }
@@ -54,17 +54,18 @@ public class myService extends Service{
         return START_STICKY;
     }
 
+    //getters for media player
     public String getDuration(){
         return String.valueOf(mp3.getDuration()/1000);
     }
-
     public int getProgress(){
         return mp3.getProgress();
     }
-
     public String getFilePath(){
         return mp3.getFilePath();
     }
+
+    //control media player
     public void playSong(String s){
         mp3.load(s);
     }
@@ -80,5 +81,4 @@ public class myService extends Service{
     public void seekTo(int i){
         mp3.mediaPlayer.seekTo(i);
     }
-
 }
